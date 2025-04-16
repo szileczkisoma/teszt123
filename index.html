@@ -29,86 +29,30 @@
         .page.active {
             display: block;
         }
-        /* Chat konténer stílusa */
-        #chat-container {
-            width: 900px;
-            max-width: 90%;
-            height: 600px;
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        /* Flex konténer a kép és chat számára */
-        .chat-section {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start; /* Balra igazítás a kép hangsúlyozására */
-            margin: 20px auto;
-            max-width: 1400px; /* Nagyobb szélesség a kép számára */
-            gap: 20px;
-        }
-        /* Kép stílusa */
-        .chat-image {
-            max-width: 400px; /* Nagyobb szélesség a kezek számára */
-            height: 700px; /* Megegyezik a #chat-container magasságával */
-            object-fit: contain; /* Teljes kép látható, arány megtartva */
-            border-radius: 8px;
-        }
-        /* Popup ablak stílusa */
-        .popup {
+        
+        /* Új stílusok a popup-hoz */
+        .popup-container {
             display: none;
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 20px;
+            background-color: #f8f8f8;
+            border: 2px solid #ddd;
             border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             z-index: 1000;
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
         }
-        .popup.active {
+        .popup-container.active {
             display: block;
         }
-        .popup h2 {
-            margin: 0 0 10px;
-            font-size: 1.5em;
-            color: #333;
-        }
-        .popup p {
-            margin: 0 0 20px;
-            color: #555;
-        }
-        .popup button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
+        .close-btn {
+            position: absolute;
+            top: 5px;
+            right: 10px;
             cursor: pointer;
-            font-size: 1em;
-        }
-        .popup button:hover {
-            background-color: #0056b3;
-        }
-        /* Háttér elsötétítése */
-        .popup-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-        }
-        .popup-overlay.active {
-            display: block;
+            font-size: 18px;
         }
     </style>
 </head>
@@ -118,35 +62,25 @@
         <a href="#kezelések" onclick="showPage('kezelések')">Kezelések</a>
         <a href="#implantatumok" onclick="showPage('implantatumok')">Implantátumok</a>
     </div>
-
     <div id="fooldal" class="page active">
         <h1>Teszt Oldal</h1>
         <p>Én vagyok a főoldal</p>
-        <!-- Chat és kép konténer -->
-        <div class="chat-section">
-            <img src="https://www.mindentment.hu/fogaszat/uploads_opt/drbarat/dr-barat.png" alt="Dr. Barát" class="chat-image">
-            <div id="chat-container"></div>
-        </div>
     </div>
-
     <div id="kezelések" class="page">
         <h1>Kezelések</h1>
         <p>Itt megismerheted a kezeléseinket</p>
     </div>
-
     <div id="implantatumok" class="page">
         <h1>Implantátumok</h1>
         <p>Itt megismerheted implantátumainkat</p>
     </div>
-
-    <!-- Popup ablak és overlay -->
-    <div class="popup-overlay" id="popup-overlay"></div>
-    <div class="popup" id="popup">
-        <h2>Gomb megtalálva!</h2>
-        <p>A Voiceflow chatbot launcher gombjára kattintottál.</p>
-        <button onclick="closePopup()">Bezárás</button>
+    
+    <!-- Új popup konténer -->
+    <div id="launcherPopup" class="popup-container">
+        <span class="close-btn" onclick="closePopup()">×</span>
+        <h2>Gomb megtalálva</h2>
     </div>
-
+    
     <script>
         // Oldalváltás logika
         function showPage(pageId) {
@@ -154,16 +88,71 @@
             document.getElementById(pageId).classList.add('active');
             window.location.hash = pageId;
         }
-
         const initialPageId = window.location.hash.slice(1) || 'fooldal';
         showPage(initialPageId);
+        
+        // Popup kezelése
+        function showPopup() {
+            console.log('Popup megjelenik');
+            document.getElementById('launcherPopup').classList.add('active');
+        }
+        
+        function closePopup() {
+            document.getElementById('launcherPopup').classList.remove('active');
+        }
+        
+        // Voiceflow launcher gomb figyelése
+        document.addEventListener('DOMContentLoaded', function() {
+            // Várni kell, amíg a Voiceflow betöltődik
+            setTimeout(function() {
+                const voiceflowChat = document.querySelector('#voiceflow-chat');
+                
+                if (voiceflowChat) {
+                    console.log('voiceflow-chat megtalálva');
+                    
+                    // Shadow DOM-on belüli elemhez hozzáférés
+                    const shadowRoot = voiceflowChat.shadowRoot;
+                    if (shadowRoot) {
+                        console.log('shadow dom megtalálva');
+                        
+                        // Ellenőrizzük, hogy a launcher gomb már létezik-e
+                        const launcherButton = shadowRoot.querySelector('.vfrc-launcher');
+                        if (launcherButton) {
+                            console.log('gomb megtalálva');
+                            addEventListenerToLauncher(launcherButton);
+                        } else {
+                            // MutationObserver beállítása, hogy figyelje a DOM változásokat
+                            const observer = new MutationObserver(function() {
+                                const launcherButton = shadowRoot.querySelector('.vfrc-launcher');
+                                if (launcherButton) {
+                                    console.log('gomb megtalálva');
+                                    addEventListenerToLauncher(launcherButton);
+                                    observer.disconnect();
+                                }
+                            });
+                            
+                            // A teljes shadow DOM-ot figyeljük
+                            observer.observe(shadowRoot, { 
+                                childList: true, 
+                                subtree: true 
+                            });
+                        }
+                    }
+                }
+            }, 2000);
+        });
+        
+        function addEventListenerToLauncher(launcherButton) {
+            launcherButton.addEventListener('click', function() {
+                console.log('gombra kattintás történt');
+                showPopup();
+            });
+        }
     </script>
-
     <script type="text/javascript">
         (function(d, t) {
             var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
             v.onload = function() {
-                console.log('Voiceflow script betöltve');
                 window.voiceflow.chat.load({
                     verify: { projectID: '67ffb52d503fdd626caa0ded' },
                     url: 'https://general-runtime.voiceflow.com',
@@ -172,79 +161,11 @@
                         url: "https://runtime-api.voiceflow.com"
                     }
                 });
-                console.log('Voiceflow widget inicializálva');
             };
             v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs"; 
             v.type = "text/javascript"; 
             s.parentNode.insertBefore(v, s);
         })(document, 'script');
-    </script>
-
-    <script>
-        // Popup vezérlő függvények
-        function showPopup() {
-            document.getElementById('popup').classList.add('active');
-            document.getElementById('popup-overlay').classList.add('active');
-        }
-
-        function closePopup() {
-            document.getElementById('popup').classList.remove('active');
-            document.getElementById('popup-overlay').classList.remove('active');
-        }
-
-        // Voiceflow launcher gomb figyelése
-        function observeChatButton() {
-            const voiceflowContainer = document.querySelector('voiceflow-chat');
-            if (voiceflowContainer && voiceflowContainer.shadowRoot) {
-                console.log('Voiceflow konténer és Shadow DOM megtalálva (voiceflow-chat), gomb figyelése indul');
-                const shadowRoot = voiceflowContainer.shadowRoot;
-                
-                const launcherButton = shadowRoot.querySelector('._15s29m92');
-                if (launcherButton) {
-                    console.log('Launcher gomb (._15s29m92) megtalálva a Shadow DOM-ban');
-                    launcherButton.addEventListener('click', () => {
-                        console.log('Launcher gombra kattintás észlelve!');
-                        showPopup();
-                    });
-                } else {
-                    console.log('Launcher gomb (._15s29m92) nem található a Shadow DOM-ban, újrapróbálkozás...');
-                    setTimeout(observeChatButton, 500);
-                }
-            } else {
-                console.log('Voiceflow konténer vagy Shadow DOM nem található (voiceflow-chat), újrapróbálkozás...');
-                setTimeout(observeChatButton, 500);
-            }
-        }
-
-        // Voiceflow betöltés és DOM figyelése
-        function waitForVoiceflow() {
-            if (window.voiceflow && window.voiceflow.chat) {
-                console.log('Voiceflow chat API betöltve');
-                // Ellenőrizzük, hogy a voiceflow-chat elem már létezik-e
-                const voiceflowContainer = document.querySelector('voiceflow-chat');
-                if (voiceflowContainer) {
-                    observeChatButton();
-                } else {
-                    // Ha még nem létezik, figyeljük a DOM változásait
-                    console.log('Voiceflow-chat elem még nem található, DOM figyelése indul...');
-                    const observer = new MutationObserver((mutations, observer) => {
-                        const voiceflowContainer = document.querySelector('voiceflow-chat');
-                        if (voiceflowContainer) {
-                            console.log('Voiceflow-chat elem hozzáadva a DOM-hoz');
-                            observer.disconnect(); // Állítsuk le a figyelést
-                            observeChatButton();
-                        }
-                    });
-                    observer.observe(document.body, { childList: true, subtree: true });
-                }
-            } else {
-                console.log('Voiceflow chat API még nem betöltve, várakozás...');
-                setTimeout(waitForVoiceflow, 500);
-            }
-        }
-
-        // Indítsuk a figyelést
-        waitForVoiceflow();
     </script>
 </body>
 </html>
