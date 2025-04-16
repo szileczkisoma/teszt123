@@ -169,6 +169,9 @@
                         url: "https://runtime-api.voiceflow.com"
                     }
                 });
+                // A widget betöltése után indítjuk az observeChatButton függvényt
+                console.log('Voiceflow widget betöltve, gomb figyelése indul...');
+                observeChatButton();
             }
             v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs"; v.type = "text/javascript"; s.parentNode.insertBefore(v, s);
         })(document, 'script');
@@ -191,34 +194,32 @@
             const voiceflowContainer = document.querySelector('voiceflow-chat');
 
             if (!voiceflowContainer) {
-                console.log('Voiceflow konténer nem található, próbálkozás újra...');
-                setTimeout(observeChatButton, 1000);
+                console.log('Voiceflow konténer nem található, újrapróbálkozás 500ms múlva...');
+                setTimeout(observeChatButton, 500);
                 return;
             }
 
             const shadowRoot = voiceflowContainer.shadowRoot;
             if (!shadowRoot) {
-                console.log('Shadow root nem található, próbálkozás újra...');
-                setTimeout(observeChatButton, 1000);
+                console.log('Shadow root nem található, újrapróbálkozás 500ms múlva...');
+                setTimeout(observeChatButton, 500);
                 return;
             }
 
             const launcherButton = shadowRoot.querySelector('._15s29m92');
             if (!launcherButton) {
-                console.log('Launcher gomb nem található, próbálkozás újra...');
-                setTimeout(observeChatButton, 1000);
+                console.log('Launcher gomb (._15s29m92) nem található, újrapróbálkozás 500ms múlva...');
+                setTimeout(observeChatButton, 500);
                 return;
             }
 
             launcherButton.addEventListener('click', () => {
+                console.log('Launcher gombra kattintás észlelve!');
                 showPopup();
             });
 
-            console.log('Launcher gomb figyelése elindult.');
+            console.log('Launcher gomb figyelése sikeresen elindult.');
         }
-
-        // Függvény indítása
-        observeChatButton();
     </script>
 </body>
 </html>
