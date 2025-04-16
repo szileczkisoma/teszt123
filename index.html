@@ -78,6 +78,9 @@
     </div>
 
     <script>
+        // Globális változó a MutationObserver tárolásához
+        let messageObserver = null;
+
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
@@ -126,41 +129,49 @@
                             });
                         }
 
-                        // --- ÚJ: ÜZENETFIGYELÉS ---
+                        // Üzenetfigyelés beállítása
                         const messageContainer = shadowRoot.querySelector('div, section, [class*="message"], [class*="chat"], [class*="conversation"]') || shadowRoot;
                         if (messageContainer) {
                             console.log('Üzenet konténer megtalálva a Shadow DOM-ban');
-                            searchForTimeConfirmationMessage(messageContainer);
-                            const observer = new MutationObserver((mutations) => {
-                                mutations.forEach((mutation) => {
-                                    if (mutation.addedNodes.length) {
-                                        mutation.addedNodes.forEach((node) => {
-                                            if (node.nodeType === Node.ELEMENT_NODE) {
-                                                searchForTimeConfirmationMessage(node);
-                                                const childElements = node.querySelectorAll('*');
-                                                childElements.forEach(child => {
-                                                    searchForTimeConfirmationMessage(child);
-                                                });
-                                            }
-                                        });
-                                    }
-                                    if (mutation.type === 'characterData' || mutation.type === 'attributes') {
-                                        const target = mutation.target;
-                                        if (target.nodeType === Node.ELEMENT_NODE) {
-                                            searchForTimeConfirmationMessage(target);
+                            
+                            // Először ellenőrizzük, hogy van-e már az üzenet
+                            if (!searchForTimeConfirmationMessage(messageContainer)) {
+                                // Ha még nincs, akkor figyeljük a változásokat
+                                messageObserver = new MutationObserver((mutations) => {
+                                    mutations.forEach((mutation) => {
+                                        if (mutation.addedNodes.length) {
+                                            mutation.addedNodes.forEach((node) => {
+                                                if (node.nodeType === Node.ELEMENT_NODE) {
+                                                    if (searchForTimeConfirmationMessage(node)) {
+                                                        return;
+                                                    }
+                                                    const childElements = node.querySelectorAll('*');
+                                                    for (const child of childElements) {
+                                                        if (searchForTimeConfirmationMessage(child)) {
+                                                            return;
+                                                        }
+                                                    }
+                                                }
+                                            });
                                         }
-                                    }
+                                        if (mutation.type === 'characterData' || mutation.type === 'attributes') {
+                                            const target = mutation.target;
+                                            if (target.nodeType === Node.ELEMENT_NODE) {
+                                                searchForTimeConfirmationMessage(target);
+                                            }
+                                        }
+                                    });
                                 });
-                            });
 
-                            observer.observe(messageContainer, {
-                                childList: true,
-                                subtree: true,
-                                characterData: true,
-                                attributes: true
-                            });
+                                messageObserver.observe(messageContainer, {
+                                    childList: true,
+                                    subtree: true,
+                                    characterData: true,
+                                    attributes: true
+                                });
 
-                            console.log('Üzenet megfigyelő beállítva');
+                                console.log('Üzenet megfigyelő beállítva');
+                            }
                         }
                     }
                 }
@@ -200,6 +211,14 @@
 
         function handleAppointmentConfirmation() {
             console.log('Időpontfoglalás sikeres volt!');
+            
+            // Leállítjuk a megfigyelést
+            if (messageObserver) {
+                messageObserver.disconnect();
+                messageObserver = null;
+                console.log('Üzenetfigyelő leállítva');
+            }
+            
             // Itt lehet bármilyen további akció
         }
     </script>
