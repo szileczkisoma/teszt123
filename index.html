@@ -216,11 +216,27 @@
             }
         }
 
-        // Voiceflow betöltés figyelése
+        // Voiceflow betöltés és DOM figyelése
         function waitForVoiceflow() {
             if (window.voiceflow && window.voiceflow.chat) {
                 console.log('Voiceflow chat API betöltve');
-                observeChatButton();
+                // Ellenőrizzük, hogy a voiceflow-chat elem már létezik-e
+                const voiceflowContainer = document.querySelector('voiceflow-chat');
+                if (voiceflowContainer) {
+                    observeChatButton();
+                } else {
+                    // Ha még nem létezik, figyeljük a DOM változásait
+                    console.log('Voiceflow-chat elem még nem található, DOM figyelése indul...');
+                    const observer = new MutationObserver((mutations, observer) => {
+                        const voiceflowContainer = document.querySelector('voiceflow-chat');
+                        if (voiceflowContainer) {
+                            console.log('Voiceflow-chat elem hozzáadva a DOM-hoz');
+                            observer.disconnect(); // Állítsuk le a figyelést
+                            observeChatButton();
+                        }
+                    });
+                    observer.observe(document.body, { childList: true, subtree: true });
+                }
             } else {
                 console.log('Voiceflow chat API még nem betöltve, várakozás...');
                 setTimeout(waitForVoiceflow, 500);
