@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>Teszt Oldal</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: white;
+            font-family: Arial, sans-serif;
+        }
+        .navbar {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        .navbar a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: black;
+        }
+        .page {
+            display: none;
+            padding: 20px;
+        }
+        .page.active {
+            display: block;
+        }
+        /* Chat konténer stílusa */
+        #chat-container {
+            width: 900px;
+            max-width: 90%;
+            height: 600px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        /* Flex konténer a kép és chat számára */
+        .chat-section {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; /* Balra igazítás a kép hangsúlyozására */
+            margin: 20px auto;
+            max-width: 1400px; /* Nagyobb szélesség a kép számára */
+            gap: 20px;
+        }
+        /* Kép stílusa */
+        .chat-image {
+            max-width: 400px; /* Nagyobb szélesség a kezek számára */
+            height: 700px; /* Megegyezik a #chat-container magasságával */
+            object-fit: contain; /* Teljes kép látható, arány megtartva */
+            border-radius: 8px;
+        }
+        /* Popup ablak stílusa */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        .popup.active {
+            display: block;
+        }
+        .popup h2 {
+            margin: 0 0 10px;
+            font-size: 1.5em;
+            color: #333;
+        }
+        .popup p {
+            margin: 0 0 20px;
+            color: #555;
+        }
+        .popup button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .popup button:hover {
+            background-color: #0056b3;
+        }
+        /* Háttér elsötétítése */
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        .popup-overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="#fooldal" onclick="showPage('fooldal')">Főoldal</a>
+        <a href="#kezelések" onclick="showPage('kezelések')">Kezelések</a>
+        <a href="#implantatumok" onclick="showPage('implantatumok')">Implantátumok</a>
+    </div>
+
+    <div id="fooldal" class="page active">
+        <h1>Teszt Oldal</h1>
+        <p>Én vagyok a főoldal</p>
+        <!-- Chat és kép konténer -->
+        <div class="chat-section">
+            <img src="https://www.mindentment.hu/fogaszat/uploads_opt/drbarat/dr-barat.png" alt="Dr. Barát" class="chat-image">
+            <div id="chat-container"></div>
+        </div>
+    </div>
+
+    <div id="kezelések" class="page">
+        <h1>Kezelések</h1>
+        <p>Itt megismerheted a kezeléseinket</p>
+    </div>
+
+    <div id="implantatumok" class="page">
+        <h1>Implantátumok</h1>
+        <p>Itt megismerheted implantátumainkat</p>
+    </div>
+
+    <!-- Popup ablak és overlay -->
+    <div class="popup-overlay" id="popup-overlay"></div>
+    <div class="popup" id="popup">
+        <h2>Gomb megtalálva!</h2>
+        <p>A Voiceflow chatbot launcher gombjára kattintottál.</p>
+        <button onclick="closePopup()">Bezárás</button>
+    </div>
+
+    <script>
+        // Oldalváltás logika
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            window.location.hash = pageId;
+        }
+
+        const initialPageId = window.location.hash.slice(1) || 'fooldal';
+        showPage(initialPageId);
+    </script>
+
+    <script type="text/javascript">
+        (function(d, t) {
+            var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
+            v.onload = function() {
+                window.voiceflow.chat.load({
+                    verify: { projectID: '67ffb52d503fdd626caa0ded' },
+                    url: 'https://general-runtime.voiceflow.com',
+                    versionID: 'production',
+                    voice: {
+                        url: "https://runtime-api.voiceflow.com"
+                    }
+                });
+            }
+            v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs"; v.type = "text/javascript"; s.parentNode.insertBefore(v, s);
+        })(document, 'script');
+    </script>
+
+    <script>
+        // Popup vezérlő függvények
+        function showPopup() {
+            document.getElementById('popup').classList.add('active');
+            document.getElementById('popup-overlay').classList.add('active');
+        }
+
+        function closePopup() {
+            document.getElementById('popup').classList.remove('active');
+            document.getElementById('popup-overlay').classList.remove('active');
+        }
+
+        // Voiceflow launcher gomb figyelése
+        function observeChatButton() {
+            const voiceflowContainer = document.querySelector('voiceflow-chat');
+
+            if (!voiceflowContainer) {
+                console.log('Voiceflow konténer nem található, próbálkozás újra...');
+                setTimeout(observeChatButton, 1000);
+                return;
+            }
+
+            const shadowRoot = voiceflowContainer.shadowRoot;
+            if (!shadowRoot) {
+                console.log('Shadow root nem található, próbálkozás újra...');
+                setTimeout(observeChatButton, 1000);
+                return;
+            }
+
+            const launcherButton = shadowRoot.querySelector('._15s29m92');
+            if (!launcherButton) {
+                console.log('Launcher gomb nem található, próbálkozás újra...');
+                setTimeout(observeChatButton, 1000);
+                return;
+            }
+
+            launcherButton.addEventListener('click', () => {
+                showPopup();
+            });
+
+            console.log('Launcher gomb figyelése elindult.');
+        }
+
+        // Függvény indítása
+        observeChatButton();
+    </script>
+</body>
+</html>
