@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Teszt Oldal</title>
-    <!-- Favicon hozzáadása a 404-es hiba elkerülésére -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>">
     <style>
         body {
@@ -29,8 +28,6 @@
         .page.active {
             display: block;
         }
-        
-        /* Új stílusok a popup-hoz */
         .popup-container {
             display: none;
             position: fixed;
@@ -74,15 +71,13 @@
         <h1>Implantátumok</h1>
         <p>Itt megismerheted implantátumainkat</p>
     </div>
-    
-    <!-- Új popup konténer -->
+
     <div id="launcherPopup" class="popup-container">
         <span class="close-btn" onclick="closePopup()">×</span>
         <h2>Gomb megtalálva</h2>
     </div>
-    
+
     <script>
-        // Oldalváltás logika
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
@@ -90,38 +85,32 @@
         }
         const initialPageId = window.location.hash.slice(1) || 'fooldal';
         showPage(initialPageId);
-        
-        // Popup kezelése
+
         function showPopup() {
             console.log('Popup megjelenik');
             document.getElementById('launcherPopup').classList.add('active');
         }
-        
+
         function closePopup() {
             document.getElementById('launcherPopup').classList.remove('active');
         }
-        
-        // Voiceflow launcher gomb figyelése
+
         document.addEventListener('DOMContentLoaded', function() {
-            // Várni kell, amíg a Voiceflow betöltődik
             setTimeout(function() {
                 const voiceflowChat = document.querySelector('#voiceflow-chat');
-                
+
                 if (voiceflowChat) {
                     console.log('voiceflow-chat megtalálva');
-                    
-                    // Shadow DOM-on belüli elemhez hozzáférés
+
                     const shadowRoot = voiceflowChat.shadowRoot;
                     if (shadowRoot) {
                         console.log('shadow dom megtalálva');
-                        
-                        // Ellenőrizzük, hogy a launcher gomb már létezik-e
+
                         const launcherButton = shadowRoot.querySelector('.vfrc-launcher');
                         if (launcherButton) {
                             console.log('gomb megtalálva');
                             addEventListenerToLauncher(launcherButton);
                         } else {
-                            // MutationObserver beállítása, hogy figyelje a DOM változásokat
                             const observer = new MutationObserver(function() {
                                 const launcherButton = shadowRoot.querySelector('.vfrc-launcher');
                                 if (launcherButton) {
@@ -130,25 +119,91 @@
                                     observer.disconnect();
                                 }
                             });
-                            
-                            // A teljes shadow DOM-ot figyeljük
-                            observer.observe(shadowRoot, { 
-                                childList: true, 
-                                subtree: true 
+
+                            observer.observe(shadowRoot, {
+                                childList: true,
+                                subtree: true
                             });
+                        }
+
+                        // --- ÚJ: ÜZENETFIGYELÉS ---
+                        const messageContainer = shadowRoot.querySelector('div, section, [class*="message"], [class*="chat"], [class*="conversation"]') || shadowRoot;
+                        if (messageContainer) {
+                            console.log('Üzenet konténer megtalálva a Shadow DOM-ban');
+                            searchForTimeConfirmationMessage(messageContainer);
+                            const observer = new MutationObserver((mutations) => {
+                                mutations.forEach((mutation) => {
+                                    if (mutation.addedNodes.length) {
+                                        mutation.addedNodes.forEach((node) => {
+                                            if (node.nodeType === Node.ELEMENT_NODE) {
+                                                searchForTimeConfirmationMessage(node);
+                                                const childElements = node.querySelectorAll('*');
+                                                childElements.forEach(child => {
+                                                    searchForTimeConfirmationMessage(child);
+                                                });
+                                            }
+                                        });
+                                    }
+                                    if (mutation.type === 'characterData' || mutation.type === 'attributes') {
+                                        const target = mutation.target;
+                                        if (target.nodeType === Node.ELEMENT_NODE) {
+                                            searchForTimeConfirmationMessage(target);
+                                        }
+                                    }
+                                });
+                            });
+
+                            observer.observe(messageContainer, {
+                                childList: true,
+                                subtree: true,
+                                characterData: true,
+                                attributes: true
+                            });
+
+                            console.log('Üzenet megfigyelő beállítva');
                         }
                     }
                 }
             }, 2000);
         });
-        
+
         function addEventListenerToLauncher(launcherButton) {
             launcherButton.addEventListener('click', function() {
                 console.log('gombra kattintás történt');
                 showPopup();
             });
         }
+
+        function searchForTimeConfirmationMessage(element) {
+            const targetMessage = "Sikeresen lefoglaltam az időpontot, a doktor úr várni fogja Önt, amelyről e-mail megerősítést is fog kapni! 🎉";
+            const elementText = element.innerText || element.textContent;
+            if (elementText && elementText.includes(targetMessage)) {
+                console.log('Időpontfoglalás megerősítő üzenet megtalálva!');
+                handleAppointmentConfirmation();
+                return true;
+            }
+
+            const childNodes = element.childNodes;
+            for (let i = 0; i < childNodes.length; i++) {
+                const child = childNodes[i];
+                if (child.nodeType === Node.TEXT_NODE) {
+                    if (child.textContent && child.textContent.includes(targetMessage)) {
+                        console.log('Időpontfoglalás megerősítő üzenet megtalálva szövegben!');
+                        handleAppointmentConfirmation();
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        function handleAppointmentConfirmation() {
+            console.log('Időpontfoglalás sikeres volt!');
+            // Itt lehet bármilyen további akció
+        }
     </script>
+
     <script type="text/javascript">
         (function(d, t) {
             var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
