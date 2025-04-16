@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Teszt Oldal</title>
+    <!-- Favicon hozzáadása a 404-es hiba elkerülésére -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>">
     <style>
         body {
             margin: 0;
@@ -161,6 +163,7 @@
         (function(d, t) {
             var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
             v.onload = function() {
+                console.log('Voiceflow script betöltve');
                 window.voiceflow.chat.load({
                     verify: { projectID: '67ffb52d503fdd626caa0ded' },
                     url: 'https://general-runtime.voiceflow.com',
@@ -169,11 +172,12 @@
                         url: "https://runtime-api.voiceflow.com"
                     }
                 });
-                // A widget betöltése után indítjuk az observeChatButton függvényt
-                console.log('Voiceflow widget betöltve, gomb figyelése indul...');
+                console.log('Voiceflow widget inicializálva, gomb figyelése indul...');
                 observeChatButton();
-            }
-            v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs"; v.type = "text/javascript"; s.parentNode.insertBefore(v, s);
+            };
+            v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs"; 
+            v.type = "text/javascript"; 
+            s.parentNode.insertBefore(v, s);
         })(document, 'script');
     </script>
 
@@ -191,24 +195,35 @@
 
         // Voiceflow launcher gomb figyelése
         function observeChatButton() {
-            const voiceflowContainer = document.querySelector('voiceflow-chat');
+            // Ellenőrizzük, hogy a Voiceflow API létezik-e
+            if (!window.voiceflow || !window.voiceflow.chat) {
+                console.log('Voiceflow API nem található, újrapróbálkozás 500ms múlva...');
+                setTimeout(observeChatButton, 500);
+                return;
+            }
 
+            // Próbáljuk meg a voiceflow-chat elemet keresni
+            const voiceflowContainer = document.querySelector('voiceflow-chat');
             if (!voiceflowContainer) {
-                console.log('Voiceflow konténer nem található, újrapróbálkozás 500ms múlva...');
+                console.log('Voiceflow konténer (voiceflow-chat) nem található a DOM-ban.');
+                console.log('DOM tartalom ellenőrzése:', document.body.innerHTML);
+                console.log('Keresés a #chat-container-ben:', document.querySelector('#chat-container').innerHTML);
                 setTimeout(observeChatButton, 500);
                 return;
             }
 
             const shadowRoot = voiceflowContainer.shadowRoot;
             if (!shadowRoot) {
-                console.log('Shadow root nem található, újrapróbálkozás 500ms múlva...');
+                console.log('Shadow root nem található a voiceflow-chat elemen, újrapróbálkozás 500ms múlva...');
                 setTimeout(observeChatButton, 500);
                 return;
             }
 
             const launcherButton = shadowRoot.querySelector('._15s29m92');
             if (!launcherButton) {
-                console.log('Launcher gomb (._15s29m92) nem található, újrapróbálkozás 500ms múlva...');
+                console.log('Launcher gomb (._15s29m92) nem található a shadow DOM-ban, újrapróbálkozás 500ms múlva...');
+                // Naplózzuk a shadow DOM tartalmát hibakereséshez
+                console.log('Shadow DOM tartalom:', shadowRoot.innerHTML);
                 setTimeout(observeChatButton, 500);
                 return;
             }
