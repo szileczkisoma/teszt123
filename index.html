@@ -60,17 +60,6 @@
             margin: 20px auto;
             gap: 30px;
         }
-        .image-container {
-            width: 900px;
-            height: 700px;
-            flex-shrink: 0;
-        }
-        .wrapper img {
-            width: 350px;
-            height: auto;
-            object-fit: contain;
-            flex-shrink: 0;
-        }
     </style>
 </head>
 <body>
@@ -83,10 +72,7 @@
     <div id="fooldal" class="page active">
         <h1>Teszt Oldal</h1>
         <p>Én vagyok a főoldal</p>
-        <div class="wrapper">
-            <img src="https://www.mindentment.hu/fogaszat/uploads_opt/drbarat/dr-barat.png" alt="Dr. Barát">
-            <div id="image-container" class="image-container"></div>
-        </div>
+        <div class="wrapper"></div>
     </div>
     <div id="kezelések" class="page">
         <h1>Kezelések</h1>
@@ -125,161 +111,21 @@
         (function(d, t) {
             var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
             v.onload = function() {
-                const DateExtension = {
-                    name: 'Date',
-                    type: 'response',
-                    match: ({trace}) => {
-                        const isMatch = trace.type === 'ext_date' || (trace.payload && trace.payload.name === 'ext_date');
-                        return isMatch;
-                    },
-                    render: ({trace, element}) => {
-                        if (!element) {
-                            return;
-                        }
-
-                        const formContainer = document.createElement('div');
-                        formContainer.style.position = 'relative';
-
-                        let currentDate = new Date();
-                        let minDate = new Date();
-                        let maxDate = new Date();
-                        maxDate.setMonth(currentDate.getMonth() + 6);
-
-                        let minDateString = minDate.toISOString().slice(0, 10);
-                        let maxDateString = maxDate.toISOString().slice(0, 10);
-
-                        formContainer.innerHTML = `
-                        <style>
-                            .date-select-container {
-                                position: relative;
-                                width: 100%;
-                            }
-                            .date-select-btn {
-                                background: linear-gradient(to right, #d3d3d3, #e0e0e0);
-                                border: none;
-                                color: #333;
-                                padding: 10px;
-                                border-radius: 5px;
-                                width: 100%;
-                                cursor: pointer;
-                                font: normal 14px sans-serif;
-                                text-align: center;
-                            }
-                            .date-select-btn:hover {
-                                opacity: 0.9;
-                            }
-                            .submit-button {
-                                background: #48AEE1;
-                                border: none;
-                                color: white;
-                                padding: 10px;
-                                border-radius: 5px;
-                                cursor: pointer;
-                                font: normal 14px sans-serif;
-                                width: 100%;
-                                margin-top: 10px;
-                                text-align: center;
-                                transition: opacity 0.3s;
-                            }
-                            .submit-button.submitted {
-                                opacity: 0.5;
-                                cursor: not-allowed;
-                            }
-                            .date-input {
-                                position: absolute;
-                                top: 0;
-                                left: 0;
-                                width: 100%;
-                                height: 100%;
-                                opacity: 0;
-                                pointer-events: none;
-                            }
-                            .date-input::-webkit-calendar-picker-indicator {
-                                position: absolute;
-                                top: 0;
-                                left: 0;
-                                right: 0;
-                                bottom: 0;
-                                width: 100%;
-                                height: 100%;
-                                cursor: pointer;
-                            }
-                        </style>
-                        <div class="date-select-container">
-                            <button class="date-select-btn">Dátum kiválasztása</button>
-                            <input type="date" class="date-input" min="${minDateString}" max="${maxDateString}" />
-                        </div>
-                    `;
-
-                        const dateSelectBtn = formContainer.querySelector('.date-select-btn');
-                        const dateInput = formContainer.querySelector('.date-input');
-                        let submitButton = null;
-
-                        dateSelectBtn.addEventListener('click', () => {
-                            dateInput.style.pointerEvents = 'auto';
-                            try {
-                                dateInput.showPicker();
-                            } catch (e) {
-                                dateInput.focus();
-                            }
-                        });
-
-                        dateInput.addEventListener('change', function () {
-                            const selectedDate = this.value;
-                            if (selectedDate) {
-                                dateSelectBtn.textContent = selectedDate;
-                                this.style.pointerEvents = 'none';
-
-                                if (!submitButton) {
-                                    submitButton = document.createElement('button');
-                                    submitButton.className = 'submit-button';
-                                    submitButton.textContent = 'Küldés';
-                                    formContainer.appendChild(submitButton);
-
-                                    submitButton.addEventListener('click', () => {
-                                        const currentDate = dateInput.value;
-                                        submitButton.textContent = 'Elküldve';
-                                        submitButton.classList.add('submitted');
-                                        submitButton.disabled = true;
-
-                                        window.voiceflow.chat.interact({
-                                            type: 'complete',
-                                            payload: {date: currentDate},
-                                        });
-                                    });
-                                }
-                            }
-                        });
-
-                        formContainer.addEventListener('click', (event) => {
-                            if (!formContainer.contains(event.target)) {
-                                dateInput.style.pointerEvents = 'none';
-                            }
-                        });
-
-                        setTimeout(() => {
-                            element.appendChild(formContainer);
-                        }, 100);
-                    },
-                };
-
                 window.voiceflow.chat.load({
-                    verify: { projectID: '6807a1a23471dd67f6d08f0d' },
+                    verify: { projectID: '67f36da0b0fcfccb2105e9a3' },
                     url: 'https://general-runtime.voiceflow.com',
-                    assistant: {
-                        extensions: [DateExtension],
-                        stylesheet: "https://szileczkisoma.github.io/mindentmentteszt/drbarat.css",
-                        persistence: 'sessionStorage'
-                    },
                     versionID: 'production',
                     voice: {
                         url: "https://runtime-api.voiceflow.com"
                     },
-                    render: {
-                        mode: 'embedded',
-                        target: document.getElementById('image-container')
-                    },
-                    autostart: true
+                    launch: {
+                        event: {
+                            type: 'launch',
+                            payload: {
+                                current_page_url: window.location.href
+                            }
+                        }
+                    }
                 });
             };
             v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs";
