@@ -113,6 +113,11 @@
             v.onload = function() {
                 window.voiceflow.chat.load({
                     verify: { projectID: '67f36da0b0fcfccb2105e9a3' },
+                    url: 'https://general-runtime.voiceflow.com',
+                    versionID: 'production',
+                    voice: {
+                        url: "https://runtime-api.voiceflow.com"
+                    },
                     launch: {
                         event: {
                             type: 'launch',
@@ -120,11 +125,6 @@
                                 current_page_url: window.location.href
                             }
                         }
-                    },
-                    url: 'https://general-runtime.voiceflow.com',
-                    versionID: 'production',
-                    voice: {
-                        url: "https://runtime-api.voiceflow.com"
                     }
                 });
             };
